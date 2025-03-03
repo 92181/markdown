@@ -2,7 +2,7 @@
 
 WIP (Work in progress).
 
-## Compiling To WebAssembly
+## WebAssembly Usage
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 
 ```bash
