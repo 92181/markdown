@@ -12,13 +12,13 @@ psr(&r,&u,b,s);
 ## WebAssembly Usage
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 
-```bash
+```sh
 // Code Here.
 ```
 
 Afterwards launch a HTTP server in the corresponding directory and visit it on the localhost.
 
-```bash
+```sh
 python3 -m http.server
 ```
 
