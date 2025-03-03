@@ -1,3 +1,3 @@
-# WpSI - Markdown Parser
+# WmDP - Extremely Fast Markdown Parser
 
 WIP (Work in progress).
