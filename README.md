@@ -22,5 +22,7 @@ Afterwards launch a HTTP server in the corresponding directory and visit it on t
 python3 -m http.server
 ```
 
+Reference: [https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/C_to_Wasm]
+
 ## License
 This project is licensed under the permissive MIT license. Please consider starring the project if you like it.
