@@ -1,4 +1,4 @@
-# WmDP - Small & Fast Markdown Parser
+# WmDP - Tiny & Fast Markdown Parser
 
 
 Testing...
