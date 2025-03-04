@@ -1,4 +1,23 @@
-# WmDP - Extremely Fast Markdown Parser
+# WmDP - Fast & Efficient Markdown Parser
+
+
+Testing...
+* Fresh Tomatoes
+* Avocados
+* Corn
+  * Organic
+  * Local
+    * The Netherlands
+* Cabbage
+* Wraps
+  * Wheat
+
+1. Revamp the codebase
+2. Push changes to production
+3. Clean the house
+   1) Vacuum the carpets
+      1. Basement and attic
+   2) Wash the windows on the second floor
 
 WIP (Work in progress).
 
