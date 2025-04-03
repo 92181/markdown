@@ -1,5 +1,9 @@
 # WmDP - Tiny & Fast Markdown Parser
 
+Hello \`Hey` and `Hello`
+
+\*Hey* `h` damn
+
 Wew 
  * ewr
 was
