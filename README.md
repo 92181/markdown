@@ -1,4 +1,4 @@
-# WmDP - Tiny & Fast Markdown Processor
+# WmDP - Markdown Processor
 
 Hello \`Hey` and `Hello`
 
