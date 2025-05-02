@@ -15,7 +15,7 @@ psr(&r,&u,b,s);
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 
 ```sh
-emcc -O3 ./../md.c -o md.js -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","UTF8ToString","stringToUTF8"]'
+emcc -O3 ./../md.c -o md.js -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","stringToUTF8"]'
 ```
 
 Afterwards launch a HTTP server in the corresponding directory and visit it on the localhost.
