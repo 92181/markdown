@@ -28,3 +28,5 @@ Reference: [https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/C_to_Was
 
 ## License
 This project is licensed under the permissive MIT license. Please consider starring the project if you like it.
+
+Made by Wolf Pieter Schulz.
