@@ -39,10 +39,7 @@ int main(int e,char **h)
     return 1;
   };
 
-  printf("Resulting File Size: %u\n",u);
-  printf("first char: %c\n",*r);
-
-  write(l,r,u); // r is not correct!
+  write(l,r,u);
 
   // Return Success;
   return 0;
