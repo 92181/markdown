@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+    <title>Markdown Live Preview</title>
+    <style>
+        html, body {
+            font-family: arial, sans-serif;
+            color: #000;
+            height: 100%;
+            margin: 0;
+        }
+
+        #inp, a {
+            color: inherit;
+        }
+
+        #git {
+            position: fixed;
+            width: 2.5rem;
+            bottom: 1.6rem;
+            right: 1.6rem;
+        }
+
+        #inp {
+            resize: none;
+            padding: 0;
+            border: 0;
+            outline: 0;
+            background: inherit;
+        }
+
+        #res, #inp {
+            flex: 0 50%;
+        }
+
+        #res *:first-child {
+            margin-top: 0;
+        }
+
+        #con {
+            display: flex;
+            padding: 2rem;
+            box-sizing: border-box;
+            min-height: 100%;
+        }
+
+        /* Markdown Styling */
+        code {
+            border: 0.1rem #f2f7fc solid;
+            border-radius: 0.5rem;
+            padding: 0.2rem;
+        }
+
+        code[language] {
+            display: block;
+            position: relative;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            white-space: pre;
+            /* width: 28rem; */
+        }
+
+        code[language]::before {
+            position: absolute;
+            content: url("copy.svg");
+            inset: 0.7rem 1rem auto auto;
+            cursor: pointer;
+            width: 1rem;
+        }
+
+        table {
+            margin: 1rem 0;
+            border-spacing: 0;
+        }
+
+        td, th {
+            border: 0.1rem #f2f7fc solid;
+            border-style: none solid solid none;
+            padding: 0.7rem;
+        }
+
+        tr:first-child {
+            & > td:first-child, & > th:first-child {
+            border-top-left-radius: 1rem; 
+            }
+            & > td:last-child, & > th:last-child {
+            border-top-right-radius: 1rem; 
+            }
+            td, th {
+            border-top-style: solid;
+            }
+        }
+
+        tr:last-child {
+            & > td:first-child {
+            border-bottom-left-radius: 1rem; 
+            }
+            & > td:last-child {
+            border-bottom-right-radius: 1rem;
+            }
+        }
+
+        tr td:first-child, tr th:first-child {
+            border-left-style: solid;
+        }
+    </style>
+</head>
+<body>
+    <div id="con">
+        <textarea id="inp"></textarea>
+        <div id="res"></div>
+    </div>
+    <a href="https://github.com/92181/markdown">
+        <svg id="git" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" author="etn-ccis">
+            <path stroke-width="0" fill="currentColor" d="M32 0 C14 0 0 14 0 32 0 53 19 62 22 62 24 62 24 61 24 60 L24 55 C17 57 14 53 13 50 13 50 13 49 11 47 10 46 6 44 10 44 13 44 15 48 15 48 18 52 22 51 24 50 24 48 26 46 26 46 18 45 12 42 12 31 12 27 13 24 15 22 15 22 13 18 15 13 15 13 20 13 24 17 27 15 37 15 40 17 44 13 49 13 49 13 51 20 49 22 49 22 51 24 52 27 52 31 52 42 45 45 38 46 39 47 40 49 40 52 L40 60 C40 61 40 62 42 62 45 62 64 53 64 32 64 14 50 0 32 0 Z"/>
+        </svg>
+    </a>
+
+    <script src="md.js"></script>
+    <script type="module">
+        window.csynf=function(){console.log("hey!")};
+
+        import {codeToHtml,getHighlighter} from 'https://esm.sh/shiki@1.0.0';
+
+        // Add Copy Logic To Code Blocks;
+        let f=document.querySelectorAll("code"),i=f.length,x=0;
+    
+        // Parse Code Blocks Using Shiki;
+        while(x<i)
+        {
+            try
+            {
+                // Highlight Code;
+                let s=document.createElement("div"),y=f[x].textContent;
+        
+                s.innerHTML=await codeToHtml(y,{lang:f[x].getAttribute("language"),theme:'min-light'});
+                
+                f[x].innerHTML=s.children[0].children[0].innerHTML;
+        
+                // On Copy Button;
+                f[x].onclick=function()
+                {
+                    navigator.clipboard.writeText(y);
+                };
+            }
+            catch(err){};
+        
+            x+=1;
+        };
+    </script>
+    <script>
+        // if type="module" cannot find Module
+        //import {codeToHtml} from 'https://esm.sh/shiki@1.0.0';
+        /*import('./md.mjs').then((module) => {
+  // Access the exported functions
+  console.log("hey!");
+  const { _psr, _malloc, _free, stringToUTF8 } = module;
+console.log("hey!")
+  // Example usage of the exported functions
+  const result = _psr();
+  console.log('Result from _psr:', result);
+
+  // You can also use _malloc, _free, and stringToUTF8 as needed
+  const ptr = _malloc(10);
+  _free(ptr);
+  const utf8String = stringToUTF8("Hello, World!");
+  console.log('UTF-8 string:', utf8String);
+}).catch((error) => {
+  console.error('Error loading the module:', error);
+});
+
+        import {onRuntimeInitialized} from './md.mjs';
+        console.log(onRuntimeInitialized);*/
+        //await Module;
+
+        Module.onRuntimeInitialized=async function()
+        {
+            function mdx(i)
+            {
+                // Convert Input;
+                let z=i.length+1,e=Module._malloc(z),u=Module._malloc(4);Module.stringToUTF8(i,e,z)
+
+                // Run And Decode UTF8 String;
+                let t=Module._psr(u,e,i.length),s=new TextDecoder("utf8").decode(new Uint8Array(HEAPU8.buffer,t).subarray(0,Module.HEAPU32[u/4]));
+                
+                // Free Memory And Return;
+                Module._free(e);Module._free(u);Module._free(t);return s;
+            };
+
+            // Get HTML Elements;
+            let y=document.querySelector("textarea"),w=document.getElementById("res"),q=0;
+            
+            // Load from ./test/page.md
+            y.value="# Hello\nNew neighbours are always a *happy* surprise?";
+
+            // Function;
+            function app()
+            {
+                w.textContent="";w.insertAdjacentHTML("afterbegin",mdx(y.value));
+
+                //syn();
+                // Handle Code Boxes!
+                window.csynf();
+            };
+
+            // Register Event;
+            y.oninput=function(e)
+            {
+                q=1;
+            };
+
+            setInterval(function()
+            {
+                if(q)
+                {
+                    q=0;app();
+                };
+            },400);
+
+            app();
+        };
+    </script> 
+</body>
+</html>
