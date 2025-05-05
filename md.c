@@ -84,25 +84,36 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
   // Handle Special Case (Other Type, Same Offset);
   if(*(*j-2)!=i&&*(*j-1)==*x)
   {
+    printf("Spec!\n\n\n"); // diff offset already: '1.' vs '*'
     *(*j-1)=100000;
-  }
+  };
+
+  // blockquote call fucks up menu!
+  // because
+  // > is there everytime! so it adds typ2 way too often
+  // blockquote needs special function can not use lis( but should use array!!!!
+  // ONLY KEEP TERMINATION HERE!
 
   // Terminate Menu;
   while(*j>c&&*x<*(*j-1))
   {
-    char *e="</ul>",*k="</ol>";*j-=2;
+    char *e="</ul>",*k="</ol>",*n="</blockquote>";*j-=2;
 
     // Get Closing Type;
-    if(**j)
+    if(**j==0)
+    {
+      stw(e,e+5,f);
+    }
+    else if(**j==1)
     {
       stw(k,k+5,f);
     }
     else
     {
-      stw(e,e+5,f);
+      stw(n,n+13,f); // Keep!
     };
 
-    printf("Shift down, Offset: %u, Type: %u\n",*x,**j);
+    //printf("Shift down, Offset: %u, Type: %u\n",*x,**j);
   };
   
   m=*j; // update m, needed!
@@ -120,7 +131,7 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
       *j+=2;
     };
 
-    printf("New Menu, Offset: %u, Type: %u\n",*x,*m);
+    //printf("New Menu, Offset: %u, Type: %u\n",*x,*m);
 
     //stw(i,i+4,f); // OLD
 
@@ -132,10 +143,10 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
     {
       char *e="<ol>";stw(e,e+4,f);
     }
-    else
+    /*else
     {
-      char *e="<blockquote>";stw(e,e+12,f);
-    };
+      char *e="<blockquote>";stw(e,e+12,f); // Do not do that here! also already do <li> here which should not happen then!
+    };*/
   };
 
   char *k="<li>";stw(k,k+4,f);
@@ -155,16 +166,30 @@ static inline void lds(char **b,char **sn,char **o)
 };
 
 
-// First FIX lists!!!!
-// Termination types are wrong
+// First CRLF vs LF bug; (\r\n vs \n)
+
+/* 
+# Hello
+New neighbours are always a *happy* surprise?damn
+
+# hey stranger 
+
+what can i do for you?
+
+> indentation is for real
+
+* List
+* another item
+* second item
+
+tables i am not even gonna try
+*/
 
 // Remove pmo in some cases?, mem * 100, only check for inf;
-
-// Then publish!
-// Later WASM!
+// Then WebAssembly!!
 
 // Parse Markdown;
-extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remove r later!
+extern inline char *psr(unsigned int *u,char *b,unsigned int s)
 {
   // Define State Variables;
   char *q=b,*a=b+s,*m=0,*o=b,hx[]="<hx>",*ho=hx+2,hd[]="</hx>";
@@ -338,38 +363,6 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           // Handle Unordered Lists;
           lis(0,sn,&x,&j,w,c,&f,b);
 
-          // We can not mix them BY Default.. KEEP buffer of SPACES for each NEW LEVEL;
-          // TYPE:LINE_SPACES,TYPE:LINE_SPACES,TYPE:LINE_SPACES (+=2); 
-
-          // Get Offset;
-          /*x=b-sn;
-
-          // New Menu On Offset Change;
-          if(j==c||x>*(j-1))
-          {
-            printf("New Menu, Offset: %u\n",x);
-
-            // Add to list state buffer;
-            if(j<w)
-            {
-              *j=0;*(j+1)=x;j+=2;
-            };
-
-            char *i="<ul>";stw(i,i+4,&f);
-          }
-          else if(x<*(j-1))
-          {
-            // Close List;
-            while(j>c&&x<*(j-1))
-            {
-              char *i="</ul>";stw(i,i+5,&f);j-=2;
-
-              printf("Shift down!\n");
-            };
-          };
-
-          char *i="<li>";stw(i,i+4,&f);*/
-
           // Handle New Line;
           b+=2;o=b;
         }
@@ -389,13 +382,15 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
         // Check For New Line;
         if(b-o==0)
         {
-          char *n=b;//,*i="<blockquote>",*h="</blockquote>";
+          char *n=b,*i="<blockquote>",*h="</blockquote>";
           
           // Save Start Offset;
-          /*if(v==0)
+          if(v==0)
           {
             sw=b-sn;
-          };*/
+          };
+
+          x=b-sn; // Fail
 
           // Get Consecutive Quote Amount;
           while(b<a&&*b=='>')
@@ -404,20 +399,57 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           };
 
           unsigned int u=b-n;
+          printf("u: %u\n",u);
 
-
-          //lis(2,sn,&x,&j,w,c,&f,b);
+          // use j here!
+          // but also use v!
           
           // Write;
-          /*while(v<u)
+          while(v>u) // Move while so only 1 while is there! (after fixing it!)
           {
-            stw(i,i+12,&f);v+=1;
+            printf("Block Shiftdown!\n"); // FUCK UP IS NOT HERE BUT ON \n!
+            //printf("x<=*(j-1): %u\n",x<=*(j-1));
+            printf("j>c: %u\n",j>c);
+            //break;  // testing only
+            
+            // terminate ul, ol & block here too!
+            while(j>c&&x<=*(j-1))
+            {
+              printf("Shift!!!!\n");
+              char *e="</ul>",*k="</ol>",*n="</blockquote>";j-=2; // FUCK UP IS NOT HERE BUT ON \n!
+
+              // Get Closing Type;
+              if(*j==0)
+              {
+                stw(e,e+5,&f);
+              }
+              else if(*j==1)
+              {
+                stw(k,k+5,&f);
+              }
+              else
+              {
+                stw(h,h+13,&f);
+
+                v-=1;break; // 
+              };
+
+              printf("Shift down, Offset: %u, Type: %u\n",x,*j);
+
+              //break; // testing only
+            };
+            //break; // testing only
+            
+            //stw(h,h+13,&f);
           };
 
-          while(v>u)
+          while(v<u&&j<w)
           {
-            stw(h,h+13,&f);v-=1;
-          };*/
+            // add to j!
+            *j=2;*(j+1)=x;j+=2;
+
+            stw(i,i+12,&f);v+=1;
+          };
 
           // Handle Offset Spaces;
           lds(&b,&sn,&o);
@@ -432,13 +464,17 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
       };
       case '\r':
       {
-        *f=*b;f++; // Line For Testing Only;
         b+=1;break;
       }
       case '\n':
       {
+
+        // look at list term, maybe that is it!!
+
         // Handle Offset Spaces;
         b+=1;sn=b;lds(&b,&sn,&o);
+        // rrrrrrrrrrrrrr
+        //printf("next line\n");
 
         // Prevent Memory Overflow;
         pmo(&f,&e,&t,13);
@@ -456,31 +492,42 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
         if(v)
         {
           // Calculate Position;
-          char *n=sn+sw,*y=n,*h="</blockquote>";
+          char *n=sn+sw,*h="</blockquote>";
 
-          // Get Quote Amount;
-          while(n<a&&*n=='>')
+          // If No Blockquote Found;
+          if(n>a||*n!='>')
           {
-            n+=1;
-          };
+            printf("Block Termination!\n");
 
-          unsigned int u=n-y;
-          
-          while(v>u)
-          {
-            stw(h,h+13,&f);v-=1;
+            while(j>c&&sw<=*(j-1)) // ADD &&v>0 // sw<= not required!
+            {
+              char *e="</ul>",*k="</ol>",*n="</blockquote>";j-=2;
+
+              // Get Closing Type;
+              if(*j==0)
+              {
+                stw(e,e+5,&f);
+              }
+              else if(*j==1)
+              {
+                stw(k,k+5,&f);
+              }
+              else
+              {
+                stw(n,n+13,&f);
+
+                if(v==0){break;};v-=1;
+              };
+
+              //printf("v after termination: %u\n",v);
+            };
           };
         };
-
-        // Blockquote and Menu Terminate interfere!! (Only on LAST \n!!!)
-        // Can terminate in wrong order!
-
-        // merge them!!! use j for blockquotes! (nested support)
 
         // Close List;
         if(j>c)
         {
-          char *n=b+1,*t=n+x+2,*i="</ul>",*k="</ol>";
+          char *n=b,*t=n+x+1,*i="</ul>",*k="</ol>";
 
           // Skip Over Offset;
           while(n<t&&*n>=' ')
@@ -494,7 +541,9 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
             // Terminate;
             while(j>c)
             {
-              j-=2;x=10000;
+              j-=2;
+              x=100000;
+              //x=0;
 
               if(*j)
               {
@@ -515,6 +564,7 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
         {
           char *i="<br>";stw(i,i+4,&f);
         };
+        // else *f='\n';f+=1;
 
         break;
       };
@@ -526,6 +576,8 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
         // Check For Active Table;
         if(sl>0)
         {
+          //
+
           // Handle Table Alignement;
           if(sl==2)
           {
@@ -551,7 +603,7 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
                   if(u>0){u=3;}else{u=2;};
                 };
               }
-              else if(*b=='|') 
+              else if(*b=='|')
               {
                 // Write To Table Style;
                 if(u>1)
@@ -591,45 +643,42 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           else
           {
             // DETECT TABLE LINE START
-            if(sj==b-o)
+            if(b-o==sj)
             {
               stw(sa,sa+8,&f);
+              b+=1;
             }
             else if(*(b+1)<' ')
             {
               // Handle Table Line End;
-              stw(sq,sq+10,&f);
+              stw(sq,sq+10,&f);b+=1;
 
-              b+=1;
-              
-              // account for \r\n or \n
-              if(b+1<a&&*(b+1)<' ')
+              // Handle CRLF;
+              while(b<a&&*b<=' ')
               {
                 b+=1;
               };
 
-              // Do NOT EXIT HERE! check for '|' AT OFFSET(sj)!
-
               b+=sj;
 
-              if(b<a&&*b=='|')
+              // Check For Termination;
+              if(b>a||*b!='|')
               {
-
-              }
-              else
-              {
-                // table end
                 char *i="</table>\n\n";stw(i,i+10,&f);
               };
 
-              // Count line ends! in sl!!!!
+              // Count Table Lines;
               sl+=1;
+
+              o=b; // new
             }
             else
             {
               // Must be inbetween (normal);
               stw(sz,sz+9,&f);
+              b+=1;
             };
+            
           };
         }
         else
@@ -651,9 +700,11 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           {
             *f=*b;f+=1;
           };
+
+          b+=1;
         };
 
-        b+=1;break;
+        break;
       };
       case '[':
       {
@@ -755,7 +806,7 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
         char *u="</code>";pmo(&f,&e,&t,128);
 
         // Handle Code Block;
-        if(b+3<a&&*(b+2)=='`')
+        if(b+3<a&&*(b+1)=='`'&&*(b+2)=='`')
         {
           char *i="<code language=\"";b+=3;stw(i,i+16,&f);
 
@@ -768,13 +819,18 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           *f='"';*(f+1)='>';f+=2;
 
           // Pass-Through Code;
+          while(b<a&&*b<=' ')
+          {
+            b+=1;
+          };
+
           while(b<a&&*b!='`')
           {
             pmo(&f,&e,&t,10);*f=*b;f+=1;b+=1;        
           };
 
           // Write End Tag;
-          stw(u,u+7,&f);b+=2;
+          stw(u,u+7,&f);b+=3;
         }
         else
         {
@@ -787,9 +843,10 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
           {
             stw(u,u+7,&f);sv=0;
           };
+
+          b+=1;
         };
 
-        b+=1; // new;
         break;
       }
       case '\\':
@@ -806,22 +863,20 @@ extern inline char *psr(char **r,unsigned int *u,char *b,unsigned int s) // Remo
       };
       default:
       {
+        // Pass-through;
         pmo(&f,&e,&t,1);
 
-        //printf("%c\n",*b);
-
-        // Pass-through;
-        *f=*b;f+=1;
-        
-        b+=1; // moved
+        *f=*b;f+=1;b+=1;
       };
     };
-
-    //b+=1;
   };
 
-  // Set Return Pointers;
-  *u=(f-t);*r=t;
+  // Free Memory And Get Size;
+  free(c);*u=(f-t);
 
-  return *r; // For now;
+  // Null-Terminate;
+  pmo(&f,&e,&t,1);*f=0;f+=1;
+
+  // Return;
+  return t;
 };
