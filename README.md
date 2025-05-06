@@ -20,7 +20,7 @@ emcc -O3 ./../md.c -o md.js -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","st
 
 Afterwards launch a HTTP server in the corresponding directory and visit it on the localhost.
 
-```sh
+```bash
 python3 -m http.server
 ```
 
