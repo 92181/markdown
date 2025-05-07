@@ -5,8 +5,8 @@ Highly performant markdown processor, WmDP is fairly conventional, however in ed
 Look in the example directory to see a basic C usage example. To give a more basic understanding of how easy it is to use the library see the below code example.
 
 ```c
-// Parse Markdown File (Output Ptr, Output Size, Input Ptr, Input Size);
-psr(&r,&u,b,s);
+// Parse Markdown File (Output Size, Input Ptr, Input Size);
+char *r=psr(&u,b,s);
 ```
 
 ## WebAssembly Usage
