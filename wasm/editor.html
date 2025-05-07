@@ -49,6 +49,7 @@
             border: 0.1rem #f2f7fc solid;
             border-radius: 0.5rem;
             padding: 0.2rem;
+            min-height: 1rem;
         }
 
         code[language] {
@@ -57,15 +58,15 @@
             padding: 0.7rem 1rem;
             border-radius: 1rem;
             white-space: pre;
-            /* width: 28rem; */
+            margin: 1rem 0;
         }
 
         code[language]::before {
             position: absolute;
-            content: url("copy.svg");
+            content: url("data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSItNSAtNSAxMDAgMTAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0zMCAzMFYxNmMwLTUuNiAwLTguNCAxLjEtMTAuNS45LTEuOSAyLjUtMy41IDQuNC00LjRDMzcuNiAwIDQwLjQgMCA0NiAwaDI4YzUuNiAwIDguNCAwIDEwLjUgMS4xIDEuOS45IDMuNSAyLjUgNC40IDQuNEM5MCA3LjYgOTAgMTAuNCA5MCAxNnYyOGMwIDUuNiAwIDguNC0xLjEgMTAuNS0uOSAxLjktMi41IDMuNS00LjQgNC40QzgyLjQgNjAgNzkuNiA2MCA3NCA2MEg2ME0zMCAzMEgxNmMtNS42IDAtOC40IDAtMTAuNSAxLjEtMS45LjktMy41IDIuNS00LjQgNC40QzAgMzcuNiAwIDQwLjQgMCA0NnYyOGMwIDUuNiAwIDguNCAxLjEgMTAuNS45IDEuOSAyLjUgMy41IDQuNCA0LjRDNy42IDkwIDEwLjQgOTAgMTYgOTBoMjhjNS42IDAgOC40IDAgMTAuNS0xLjEgMS45LS45IDMuNS0yLjUgNC40LTQuNEM2MCA4Mi40IDYwIDc5LjYgNjAgNzRWNjBNMzAgMzBoMTRjNS42IDAgOC40IDAgMTAuNSAxLjEgMS45LjkgMy41IDIuNSA0LjQgNC40QzYwIDM3LjYgNjAgNDAuNCA2MCA0NnYxNCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=");
             inset: 0.7rem 1rem auto auto;
             cursor: pointer;
-            width: 1rem;
+            width: 0.8rem;
         }
 
         table {
@@ -116,109 +117,80 @@
         </svg>
     </a>
 
-    <script src="md.js"></script>
     <script type="module">
-        window.csynf=function(){console.log("hey!")};
+        import {codeToHtml} from 'https://esm.sh/shiki@1.0.0';
+        import Module from './md.mjs';
+        
+        const mds = await Module();
 
-        import {codeToHtml,getHighlighter} from 'https://esm.sh/shiki@1.0.0';
-
-        // Add Copy Logic To Code Blocks;
-        let f=document.querySelectorAll("code"),i=f.length,x=0;
-    
-        // Parse Code Blocks Using Shiki;
-        while(x<i)
+        // Process Markdown;
+        function mdx(i)
         {
-            try
-            {
-                // Highlight Code;
-                let s=document.createElement("div"),y=f[x].textContent;
-        
-                s.innerHTML=await codeToHtml(y,{lang:f[x].getAttribute("language"),theme:'min-light'});
-                
-                f[x].innerHTML=s.children[0].children[0].innerHTML;
-        
-                // On Copy Button;
-                f[x].onclick=function()
-                {
-                    navigator.clipboard.writeText(y);
-                };
-            }
-            catch(err){};
-        
-            x+=1;
-        };
-    </script>
-    <script>
-        // if type="module" cannot find Module
-        //import {codeToHtml} from 'https://esm.sh/shiki@1.0.0';
-        /*import('./md.mjs').then((module) => {
-  // Access the exported functions
-  console.log("hey!");
-  const { _psr, _malloc, _free, stringToUTF8 } = module;
-console.log("hey!")
-  // Example usage of the exported functions
-  const result = _psr();
-  console.log('Result from _psr:', result);
+            // Convert Input;
+            let z=i.length+1,e=mds._malloc(z),u=mds._malloc(4);mds.stringToUTF8(i,e,z);
 
-  // You can also use _malloc, _free, and stringToUTF8 as needed
-  const ptr = _malloc(10);
-  _free(ptr);
-  const utf8String = stringToUTF8("Hello, World!");
-  console.log('UTF-8 string:', utf8String);
-}).catch((error) => {
-  console.error('Error loading the module:', error);
-});
-
-        import {onRuntimeInitialized} from './md.mjs';
-        console.log(onRuntimeInitialized);*/
-        //await Module;
-
-        Module.onRuntimeInitialized=async function()
-        {
-            function mdx(i)
-            {
-                // Convert Input;
-                let z=i.length+1,e=Module._malloc(z),u=Module._malloc(4);Module.stringToUTF8(i,e,z)
-
-                // Run And Decode UTF8 String;
-                let t=Module._psr(u,e,i.length),s=new TextDecoder("utf8").decode(new Uint8Array(HEAPU8.buffer,t).subarray(0,Module.HEAPU32[u/4]));
-                
-                // Free Memory And Return;
-                Module._free(e);Module._free(u);Module._free(t);return s;
-            };
-
-            // Get HTML Elements;
-            let y=document.querySelector("textarea"),w=document.getElementById("res"),q=0;
+            // Run And Decode UTF8 String;
+            let t=mds._psr(u,e,i.length),s=new TextDecoder("utf8").decode(new Uint8Array(mds.HEAPU8.buffer,t).subarray(0,mds.HEAPU32[u/4]));
             
-            // Load from ./test/page.md
-            y.value="# Hello\nNew neighbours are always a *happy* surprise?";
-
-            // Function;
-            function app()
-            {
-                w.textContent="";w.insertAdjacentHTML("afterbegin",mdx(y.value));
-
-                //syn();
-                // Handle Code Boxes!
-                window.csynf();
-            };
-
-            // Register Event;
-            y.oninput=function(e)
-            {
-                q=1;
-            };
-
-            setInterval(function()
-            {
-                if(q)
-                {
-                    q=0;app();
-                };
-            },400);
-
-            app();
+            // Free Memory And Return;
+            mds._free(e);mds._free(u);mds._free(t);return s;
         };
+
+        // Highlight Code Blocks;
+        async function syn()
+        {
+            let f=document.querySelectorAll("code"),i=f.length,x=0;
+    
+            // Parse Code Blocks Using Shiki;
+            while(x<i)
+            {
+                if(f[x].hasAttribute("language"))
+                {
+                    // Highlight Code;
+                    let s=document.createElement("div"),y=f[x].textContent;
+
+                    try
+                    {
+                        s.innerHTML=await codeToHtml(y,{lang:f[x].getAttribute("language"),theme:'min-light'});
+                        f[x].innerHTML=s.children[0].children[0].innerHTML;
+                    }
+                    catch(e){};
+
+                    // Copy Functionality;
+                    f[x].onclick=function()
+                    {
+                        navigator.clipboard.writeText(y);
+                    };
+                };
+            
+                x+=1;
+            };
+        };
+
+        // Get HTML Elements;
+        let y=document.querySelector("textarea"),w=document.getElementById("res"),q=0;y.value=await(await fetch("introduction.md")).text();
+        
+        // Function;
+        function app()
+        {
+            w.textContent="";w.insertAdjacentHTML("afterbegin",mdx(y.value));syn();
+        };
+
+        // Register Event;
+        y.oninput=function(e)
+        {
+            q=1;
+        };
+
+        setInterval(function()
+        {
+            if(q)
+            {
+                q=0;app();
+            };
+        },400);
+
+        app();
     </script> 
 </body>
 </html>
