@@ -2,6 +2,12 @@
 
 Highly performant markdown processor, WmDP is fairly conventional, however in edge cases results may differ from other parsers.
 
+What WmDP can do...
+* Tables, code blocks, checkboxes, subscript & superscript.
+* Unordered, ordered lists & blockquotes.
+* Italic, cursive, strike-through text.
+* Images, links, titles, etc.
+
 Look in the example directory to see a basic C usage example. To give a more basic understanding of how easy it is to use the library see the below code example.
 
 ```c
