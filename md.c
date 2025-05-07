@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <stdio.h> // debugging only
+// Remove pmo in some cases?, mem * 100, only check for inf;
 
 // Write String To Memory Location;
 static inline void stw(char *o,char *s,char **f)
@@ -75,24 +75,10 @@ static inline void sit(char **f,char **b,char c,unsigned int *d,unsigned int *x)
 };
 
 // Handle Lists;
-//static inline void lis(char i,char *sn,int *x,int **j,int *w,int *c,char **f,char *b)
 static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned int *w,unsigned int *c,char **f,char *b)
 {
   // Get Offset;
   unsigned *m=*j;*x=b-sn;
-
-  // Handle Special Case (Other Type, Same Offset);
-  if(*(*j-2)!=i&&*(*j-1)==*x)
-  {
-    printf("Spec!\n\n\n"); // diff offset already: '1.' vs '*'
-    *(*j-1)=100000;
-  };
-
-  // blockquote call fucks up menu!
-  // because
-  // > is there everytime! so it adds typ2 way too often
-  // blockquote needs special function can not use lis( but should use array!!!!
-  // ONLY KEEP TERMINATION HERE!
 
   // Terminate Menu;
   while(*j>c&&*x<*(*j-1))
@@ -110,10 +96,8 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
     }
     else
     {
-      stw(n,n+13,f); // Keep!
+      stw(n,n+13,f);
     };
-
-    //printf("Shift down, Offset: %u, Type: %u\n",*x,**j);
   };
   
   m=*j; // update m, needed!
@@ -124,29 +108,17 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
     // Save Type And Offset To Buffer;
     if(*j<w)
     {
-      //*m=*(i+1)-'o'==0; // OLD
-      *m=i; // NEW;
-      *(m+1)=*x;
-      
-      *j+=2;
+      *m=i;*(m+1)=*x;*j+=2;
     };
 
-    //printf("New Menu, Offset: %u, Type: %u\n",*x,*m);
-
-    //stw(i,i+4,f); // OLD
-
-    if(i==0) // NEW;
+    if(i==0)
     {
       char *e="<ul>";stw(e,e+4,f);
     }
     else if(i==1)
     {
       char *e="<ol>";stw(e,e+4,f);
-    }
-    /*else
-    {
-      char *e="<blockquote>";stw(e,e+12,f); // Do not do that here! also already do <li> here which should not happen then!
-    };*/
+    };
   };
 
   char *k="<li>";stw(k,k+4,f);
@@ -165,29 +137,6 @@ static inline void lds(char **b,char **sn,char **o)
   *o=*b;
 };
 
-
-// First CRLF vs LF bug; (\r\n vs \n)
-
-/* 
-# Hello
-New neighbours are always a *happy* surprise?damn
-
-# hey stranger 
-
-what can i do for you?
-
-> indentation is for real
-
-* List
-* another item
-* second item
-
-tables i am not even gonna try
-*/
-
-// Remove pmo in some cases?, mem * 100, only check for inf;
-// Then WebAssembly!!
-
 // Parse Markdown;
 extern inline char *psr(unsigned int *u,char *b,unsigned int s)
 {
@@ -202,11 +151,8 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
   char *sn=b; // new!
 
   // Allocate Buffer Memory;
-  char *t=malloc(5),*e=t+5,*f=t,*y=b+s; // was 1024*1024 (5 for testing only!)
+  char *t=malloc(1024*1024),*e=t+5,*f=t,*y=b+s;
 
-
-
-  
   unsigned int st=0,sm=0,sx=0,sc=0,sg=0;
 
   // List State Buffer;
@@ -245,10 +191,10 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         else
         {
           // Pass-through;
-          *f=*b;f+=1;
+          *f=*b;b+=1;f+=1;
         };
 
-        b+=1;break;
+        break;
       };
       case '_':
       {
@@ -390,7 +336,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
             sw=b-sn;
           };
 
-          x=b-sn; // Fail
+          x=b-sn;
 
           // Get Consecutive Quote Amount;
           while(b<a&&*b=='>')
@@ -399,24 +345,16 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           };
 
           unsigned int u=b-n;
-          printf("u: %u\n",u);
 
-          // use j here!
-          // but also use v!
-          
           // Write;
-          while(v>u) // Move while so only 1 while is there! (after fixing it!)
+          if(v>u)
           {
-            printf("Block Shiftdown!\n"); // FUCK UP IS NOT HERE BUT ON \n!
-            //printf("x<=*(j-1): %u\n",x<=*(j-1));
-            printf("j>c: %u\n",j>c);
-            //break;  // testing only
-            
+            // printf("Block Shiftdown!\n");
+
             // terminate ul, ol & block here too!
             while(j>c&&x<=*(j-1))
             {
-              printf("Shift!!!!\n");
-              char *e="</ul>",*k="</ol>",*n="</blockquote>";j-=2; // FUCK UP IS NOT HERE BUT ON \n!
+              char *e="</ul>",*k="</ol>",*n="</blockquote>";j-=2;
 
               // Get Closing Type;
               if(*j==0)
@@ -431,16 +369,9 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
               {
                 stw(h,h+13,&f);
 
-                v-=1;break; // 
+                v-=1;break;
               };
-
-              printf("Shift down, Offset: %u, Type: %u\n",x,*j);
-
-              //break; // testing only
             };
-            //break; // testing only
-            
-            //stw(h,h+13,&f);
           };
 
           while(v<u&&j<w)
@@ -468,40 +399,62 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       }
       case '\n':
       {
-
-        // look at list term, maybe that is it!!
-
         // Handle Offset Spaces;
         b+=1;sn=b;lds(&b,&sn,&o);
-        // rrrrrrrrrrrrrr
-        //printf("next line\n");
 
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,13);
+        pmo(&f,&e,&t,20);
 
         // Close Header Tag;
         if(*ho!='x')
         {
           // Get Type And Write;
-          *(hd+3)=*ho;stw(hd,hd+5,&f);
-
-          *f='\n';f+=1;*ho='x';
+          *(hd+3)=*ho;stw(hd,hd+5,&f);*ho='x';
         };
 
         // Close Blockquote;
-        if(v)
+        char *e="</ul>",*k="</ol>",*h="</blockquote>";
+
+        // Terminate Lists And Blockquotes;
+        if(j>c)
         {
-          // Calculate Position;
-          char *n=sn+sw,*h="</blockquote>";
+          unsigned int o=100000;char *n,*t;
 
-          // If No Blockquote Found;
-          if(n>a||*n!='>')
+          // Handle Blockquote;
+          if(v)
           {
-            printf("Block Termination!\n");
+            n=sn+sw;
 
-            while(j>c&&sw<=*(j-1)) // ADD &&v>0 // sw<= not required!
+            // If First Blockquote Is Not There;
+            if(n>a||*n!='>')
             {
-              char *e="</ul>",*k="</ol>",*n="</blockquote>";j-=2;
+              o=sw;
+            };
+          };
+
+          // Handle List;
+          n=b;t=n+x+1;
+
+          // Last Offset Reach Check;
+          while(n<t&&*n>=' ')
+          {
+            n+=1;
+          };
+
+          // If Not Reached Get Termination Cutoff (New);
+          if(n!=t)
+          {
+            if(n-b<o)
+            {
+              o=n-b;
+            };
+          };
+
+          if(o!=100000)
+          {
+            while(j>c&&*(j-1)>=o)
+            {
+              j-=2;
 
               // Get Closing Type;
               if(*j==0)
@@ -514,48 +467,9 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
               }
               else
               {
-                stw(n,n+13,&f);
-
-                if(v==0){break;};v-=1;
-              };
-
-              //printf("v after termination: %u\n",v);
-            };
-          };
-        };
-
-        // Close List;
-        if(j>c)
-        {
-          char *n=b,*t=n+x+1,*i="</ul>",*k="</ol>";
-
-          // Skip Over Offset;
-          while(n<t&&*n>=' ')
-          {
-            n+=1;
-          };
-
-          // Check Success;
-          if(n!=t)
-          {
-            // Terminate;
-            while(j>c)
-            {
-              j-=2;
-              x=100000;
-              //x=0;
-
-              if(*j)
-              {
-                stw(k,k+5,&f);
-              }
-              else
-              {
-                stw(i,i+5,&f);
+                stw(h,h+13,&f);v-=1;
               };
             };
-
-            printf("Terminated List!\n\n");
           };
         };
 
@@ -563,8 +477,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         if(0)
         {
           char *i="<br>";stw(i,i+4,&f);
+        }
+        else
+        {
+          //*f=' ';f+=1;
+          *f='\n';f+=1;
         };
-        // else *f='\n';f+=1;
 
         break;
       };
@@ -576,8 +494,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         // Check For Active Table;
         if(sl>0)
         {
-          //
-
           // Handle Table Alignement;
           if(sl==2)
           {
@@ -668,15 +584,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
               };
 
               // Count Table Lines;
-              sl+=1;
-
-              o=b; // new
+              sl+=1;o=b;
             }
             else
             {
-              // Must be inbetween (normal);
-              stw(sz,sz+9,&f);
-              b+=1;
+              // In-between Table Line;
+              stw(sz,sz+9,&f);b+=1;
             };
             
           };
@@ -689,9 +602,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
             char i[256]="<table id='t",*k="'>";sl=1;sg+=1;
 
             // Write ID;
-            stw(i,i+12,&f);f+=its(sg,f);
-            
-            stw(k,k+2,&f);stw(sa,sa+8,&f);
+            stw(i,i+12,&f);f+=its(sg,f);stw(k,k+2,&f);stw(sa,sa+8,&f);
             
             // Save Start Offset;
             sj=b-o;
