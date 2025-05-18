@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// Remove pmo in some cases?, mem * 100, only check for inf;
-
 // Write String To Memory Location;
 static inline void stw(char *o,char *s,char **f)
 {
@@ -141,19 +139,15 @@ static inline void lds(char **b,char **sn,char **o)
 extern inline char *psr(unsigned int *u,char *b,unsigned int s)
 {
   // Define State Variables;
-  char *q=b,*a=b+s,*m=0,*o=b,hx[]="<hx>",*ho=hx+2,hd[]="</hx>";
+  char *q=b,*a=b+s,*m=0,*o=b,*sn=b,hx[]="<hx>",*ho=hx+2,hd[]="</hx>";
 
   unsigned int z=0,x=10000,g=0;
 
   // Simulated New Line & Blockquote Variables;
-  unsigned int v=0,sw=0;
+  unsigned int v=0,sw=0,st=0,sm=0,sx=0,sc=0,sg=0;
 
-  char *sn=b; // new!
-
-  // Allocate Buffer Memory;
-  char *t=malloc(1024*1024),*e=t+5,*f=t,*y=b+s;
-
-  unsigned int st=0,sm=0,sx=0,sc=0,sg=0;
+  // Allocate Buffer Memory (Input Size * Highest Set Size);
+  char *t=malloc(s*20),*e=t+s*20,*f=t,*y=b+s;
 
   // List State Buffer;
   unsigned int *c=malloc(256*sizeof(unsigned int)),*j=c,*w=c+256;*(c+1)=0;
@@ -174,9 +168,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         // Check For New Line;
         if(b-o==0)
         {
-          // Prevent Memory Overflow;
-          pmo(&f,&e,&t,4);
-
           // Get Header Type;
           char *n=b;
 
@@ -198,9 +189,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       };
       case '_':
       {
-        // Prevent Memory Overflow;
-        pmo(&f,&e,&t,14);
-
         // Handle Text Emphasis;
         sit(&f,&b,'_',&sx,&sc);
 
@@ -208,9 +196,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       }
       case '~':
       {
-        // Prevent Memory Overflow;
-        pmo(&f,&e,&t,6);
-
         if(*(b+1)=='~')
         {
           // Handle Text Strike-Through;
@@ -244,9 +229,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       }
       case '^':
       {
-        // Prevent Memory Overflow;
-        pmo(&f,&e,&t,6);
-
         // Handle Text Strike-Through;
         if(sm)
         {
@@ -297,7 +279,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '*':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,14);
+        pmo(&f,&e,&t,1024);
 
         if(*(b+1)=='*')
         {
@@ -323,7 +305,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '>':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,13);
+        pmo(&f,&e,&t,1024);
 
         // Check For New Line;
         if(b-o==0)
@@ -349,8 +331,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           // Write;
           if(v>u)
           {
-            // printf("Block Shiftdown!\n");
-
             // terminate ul, ol & block here too!
             while(j>c&&x<=*(j-1))
             {
@@ -376,7 +356,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
 
           while(v<u&&j<w)
           {
-            // add to j!
+            // Add To List Array;
             *j=2;*(j+1)=x;j+=2;
 
             stw(i,i+12,&f);v+=1;
@@ -403,7 +383,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         b+=1;sn=b;lds(&b,&sn,&o);
 
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,20);
+        pmo(&f,&e,&t,1024);
 
         // Close Header Tag;
         if(*ho!='x')
@@ -480,8 +460,8 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         }
         else
         {
-          //*f=' ';f+=1;
-          *f='\n';f+=1;
+          *f=' ';f+=1;
+          //*f='\n';f+=1;
         };
 
         break;
@@ -489,7 +469,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '|':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,512);
+        pmo(&f,&e,&t,1024);
 
         // Check For Active Table;
         if(sl>0)
@@ -620,7 +600,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '[':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,512);
+        pmo(&f,&e,&t,1024);
 
         // Handle Image, Checkbox Or Link;
         if(b-1>q&&*(b-1)=='!')
@@ -694,9 +674,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       }
       case ']':
       {
-        // Handle Memory;
-        pmo(&f,&e,&t,4);
-
         // Link Content Ended;
         if(su!=0)
         {
@@ -714,7 +691,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '`':
       {
         // Handle Memory;
-        char *u="</code>";pmo(&f,&e,&t,128);
+        char *u="</code>";
 
         // Handle Code Block;
         if(b+3<a&&*(b+1)=='`'&&*(b+2)=='`')
@@ -775,8 +752,6 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       default:
       {
         // Pass-through;
-        pmo(&f,&e,&t,1);
-
         *f=*b;f+=1;b+=1;
       };
     };
@@ -786,7 +761,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
   free(c);*u=(f-t);
 
   // Null-Terminate;
-  pmo(&f,&e,&t,1);*f=0;f+=1;
+  *f=0;f+=1;
 
   // Return;
   return t;
