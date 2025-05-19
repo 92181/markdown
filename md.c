@@ -147,7 +147,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
   unsigned int v=0,sw=0,st=0,sm=0,sx=0,sc=0,sg=0;
 
   // Allocate Buffer Memory (Input Size * Highest Set Size);
-  char *t=malloc(s*20),*e=t+s*20,*f=t,*y=b+s;
+  char *t=malloc(s*26),*e=t+s*26,*f=t,*y=b+s;
 
   // List State Buffer;
   unsigned int *c=malloc(256*sizeof(unsigned int)),*j=c,*w=c+256;*(c+1)=0;
