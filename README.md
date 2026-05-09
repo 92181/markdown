@@ -15,6 +15,8 @@ Look in the example directory to see a basic C usage example. To give a more bas
 char *r=psr(&u,b,s);
 ```
 
+The example executable can simply be compiled with `gcc main.c -o main -O3` then run it with `./main ../tests.generic.md` to generate an .html file.
+
 ## WebAssembly Usage
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 

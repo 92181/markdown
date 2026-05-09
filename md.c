@@ -11,14 +11,21 @@ static inline void stw(char *o,char *s,char **f)
 };
 
 // Prevent Memory Overflow;
-static inline void pmo(char **f,char **e,char **t,unsigned int s)
+static inline int pmo(char **f,char **e,char **t,unsigned int s)
 {
   if(*f+s>*e)
   {
     unsigned int q=*f-*t,c=(*e-*t)+1024*1024;
 
     *t=realloc(*t,c);*f=*t+q;*e=*t+c;
+
+    if(*t==0)
+    {
+      return 1;
+    };
   };
+
+  return 0;
 };
 
 // Convert Integer To String (Max: 10 Characters);
@@ -150,7 +157,14 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
   char *t=malloc(s*26),*e=t+s*26,*f=t,*y=b+s;
 
   // List State Buffer;
-  unsigned int *c=malloc(256*sizeof(unsigned int)),*j=c,*w=c+256;*(c+1)=0;
+  unsigned int *c=malloc(256*sizeof(unsigned int)),*j=c,*w=c+256;
+
+  if(t==0||c==0)
+  {
+    return 0;
+  };
+
+  *(c+1)=0;
 
   // Table Variables;
   char sa[]="<tr><th>",sq[]="</th></tr>",sz[]="</th><th>";unsigned int sl=0,sj=0;
@@ -245,7 +259,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case ')':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1);
+        if(pmo(&f,&e,&t,1)){return 0;};
 
         // Get Numbers In Front;
         char *n=b-1;
@@ -279,7 +293,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '*':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1024);
+        if(pmo(&f,&e,&t,1024)){return 0;};
 
         if(*(b+1)=='*')
         {
@@ -305,7 +319,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '>':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1024);
+        if(pmo(&f,&e,&t,1024)){return 0;};
 
         // Check For New Line;
         if(b-o==0)
@@ -383,7 +397,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
         b+=1;sn=b;lds(&b,&sn,&o);
 
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1024);
+        if(pmo(&f,&e,&t,1024)){return 0;};
 
         // Close Header Tag;
         if(*ho!='x')
@@ -469,7 +483,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '|':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1024);
+        if(pmo(&f,&e,&t,1024)){return 0;};
 
         // Check For Active Table;
         if(sl>0)
@@ -505,7 +519,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
                 if(u>1)
                 {
                   // Prevent Memory Overflow;
-                  pmo(&f,&e,&t,512);
+                  if(pmo(&f,&e,&t,512)){return 0;};
 
                   // Handle Process;
                   char *h="#t",*z=">td:nth-child(",*k="){text-align:",*e="center;}",*l="right;}";
@@ -600,7 +614,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '[':
       {
         // Prevent Memory Overflow;
-        pmo(&f,&e,&t,1024);
+        if(pmo(&f,&e,&t,1024)){return 0;};
 
         // Handle Image, Checkbox Or Link;
         if(b-1>q&&*(b-1)=='!')
@@ -612,7 +626,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           // Pass-Through Alt Text;
           while(b<a&&*b!=']')
           {
-            pmo(&f,&e,&t,10);*f=*b;f+=1;b+=1;        
+            if(pmo(&f,&e,&t,10))
+            {
+              return 0;
+            };
+            
+            *f=*b;f+=1;b+=1;        
           };
 
           stw(y,y+7,&f);b+=2;
@@ -620,7 +639,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           // Write Image Source;
           while(b<a&&*b!=')')
           {
-            pmo(&f,&e,&t,5);*f=*b;f+=1;b+=1;  
+            if(pmo(&f,&e,&t,5))
+            {
+              return 0;
+            };
+            
+            *f=*b;f+=1;b+=1;  
           };
 
           stw(g,g+2,&f);
@@ -669,8 +693,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           };
         };
 
-        b+=1; // new;
-        break;
+        b+=1;break;
       }
       case ']':
       {
@@ -685,8 +708,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           *f=']';b+=1;f+=1;
         };
 
-        b+=1; // new;
-        break;
+        b+=1;break;
       }
       case '`':
       {
@@ -701,7 +723,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           // Pass-Through Type;
           while(b<a&&*b>=' ')
           {
-            pmo(&f,&e,&t,10);*f=*b;f+=1;b+=1;        
+            if(pmo(&f,&e,&t,10))
+            {
+              return 0;
+            };
+
+            *f=*b;f+=1;b+=1;        
           };
 
           *f='"';*(f+1)='>';f+=2;
@@ -714,7 +741,12 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
 
           while(b<a&&*b!='`')
           {
-            pmo(&f,&e,&t,10);*f=*b;f+=1;b+=1;        
+            if(pmo(&f,&e,&t,10))
+            {
+              return 0;
+            };
+
+            *f=*b;f+=1;b+=1;        
           };
 
           // Write End Tag;

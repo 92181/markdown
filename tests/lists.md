@@ -9,7 +9,7 @@ Good.
 Good.
 
 > * Corn
->   * Organic, (bad behav! missing ul)
+>   * Organic, (bad behav?)
 >     Tasty!
 >   * Local
 >     * From a _small_ province
@@ -25,7 +25,7 @@ Good.
 2. Clean the house
    * Vacuum the carpets
       1) Basement and attic
-      * Will not work
+      * Will work
    * Wash the windows on the second floor
 3. Push changes to production
 
