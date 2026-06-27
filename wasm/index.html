@@ -122,6 +122,7 @@
         import Module from './md.mjs';
         
         const mds = await Module();
+        console.log(mds.HEAPU8.buffer)
 
         // Process Markdown;
         function mdx(i)
@@ -129,9 +130,8 @@
             // Convert Input;
             let z=i.length+1,e=mds._malloc(z),u=mds._malloc(4);mds.stringToUTF8(i,e,z);
 
-            // Run And Decode UTF8 String;
             let t=mds._psr(u,e,i.length),s=new TextDecoder("utf8").decode(new Uint8Array(mds.HEAPU8.buffer,t).subarray(0,mds.HEAPU32[u/4]));
-            
+
             // Free Memory And Return;
             mds._free(e);mds._free(u);mds._free(t);return s;
         };
@@ -168,7 +168,7 @@
         };
 
         // Get HTML Elements;
-        let y=document.querySelector("textarea"),w=document.getElementById("res"),q=0;y.value=await(await fetch("./tests/generic.md")).text();
+        let y=document.querySelector("textarea"),w=document.getElementById("res"),q=0;y.value=await(await fetch("why.md")).text();
         
         // Function;
         function app()

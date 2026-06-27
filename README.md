@@ -21,10 +21,10 @@ The example executable can simply be compiled with `gcc main.c -o main -O3` then
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 
 ```sh
-emcc -O3 ./../md.c -o md.js -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","stringToUTF8"]'
+emcc -O3 ./../md.c -o md.mjs -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","stringToUTF8"]' -s EXPORTED_RUNTIME_METHODS='["HEAPU8","HEAPU32"]'
 ```
 
-Afterwards launch a HTTP server in the corresponding directory and visit it on the localhost.
+Afterwards launch a HTTP server in the same directory and visit it on the localhost.
 
 ```bash
 python3 -m http.server
