@@ -130,10 +130,10 @@ static inline void lis(char i,char *sn,unsigned int *x,unsigned int **j,unsigned
 };
 
 // Remove Spaces In Front Of (Fake) New Line;
-static inline void lds(char **b,char **sn,char **o)
+static inline void lds(char **b,char **o,char *end)
 {
   // Remove Dead Spaces;
-  while(**b==' ')
+  while(*b<end&&**b==' ')
   {
     *b+=1;
   };
@@ -377,7 +377,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
           };
 
           // Handle Offset Spaces;
-          lds(&b,&sn,&o);
+          lds(&b,&o,a);
         }
         else
         {
@@ -394,7 +394,7 @@ extern inline char *psr(unsigned int *u,char *b,unsigned int s)
       case '\n':
       {
         // Handle Offset Spaces;
-        b+=1;sn=b;lds(&b,&sn,&o);
+        b+=1;sn=b;lds(&b,&o,a);
 
         // Prevent Memory Overflow;
         if(pmo(&f,&e,&t,1024)){return 0;};
