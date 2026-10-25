@@ -10,6 +10,9 @@ _This text is_ ___italic.___
 
 ~~Strike~~through ~~text~~.
 
+<br>x~2~ 
+<br>x^2^ 
+
 ## Lists
 
 Demonstrating list functionality.
@@ -56,7 +59,7 @@ Demonstrating list functionality.
     > Next line!
   * End;
 
-[ ] Personal projects
+[ ] Personal projects<br>
 [x] Homework
 
 ## Tables

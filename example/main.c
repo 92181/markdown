@@ -13,7 +13,7 @@ int main(int e,char **h)
   // Check For Valid Usage;
   if(e<2)
   {
-    char i[]="Correct Usage: ./main page.md\n";write(1,i,sizeof(i));
+    char i[]="Correct Usage: ./main ../tests/page.md\n";write(1,i,sizeof(i));
 
     return 0;
   };
