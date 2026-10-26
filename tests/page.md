@@ -10,8 +10,10 @@ _This text is_ ___italic.___
 
 ~~Strike~~through ~~text~~.
 
-<br>x~2~ 
-<br>x^2^ 
+<br>
+<br>x~2~ (\~x\~)
+<br>x^2^ (\^x\^)
+<br>~ x ~
 
 ## Lists
 

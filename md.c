@@ -23,7 +23,8 @@ static inline int pmo(char **f, char **e, char **t, unsigned int s)
 
     if (u == 0)
     {
-      free(*t); return 1;
+      free(*t);
+      return 1;
     };
 
     *t = u;
@@ -65,7 +66,7 @@ static inline void sit(char **f, char **b, char *end, char c, unsigned int *d, u
     *b += 1;
     return;
   }
-  
+
   *b += 1;
 
   if (**b == c)
@@ -194,7 +195,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
   // Allocate Buffer Memory (Input Size * Highest Set Size);
   char *t = malloc(s * 26), *e = t + s * 26, *f = t, *y = b + s;
 
-  if(t == 0)
+  if (t == 0)
   {
     return 0;
   }
@@ -204,7 +205,8 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
   if (c == 0)
   {
-    free(t); return 0;
+    free(t);
+    return 0;
   };
 
   *(c + 1) = 0;
@@ -286,7 +288,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
         b += 2;
       }
-      else if (b + 1 < a)
+      else
       {
         // Handle Subscript;
         if (sm)
@@ -295,21 +297,20 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           char *i = "</sub>";
           stw(i, i + 6, &f);
         }
-        else if (*(b + 1) > ' ')
+        else if (b + 1 < a && *(b + 1) > ' ')
         {
           sm = 1;
           char *i = "<sub>";
           stw(i, i + 5, &f);
-        };
+        }
+        else
+        {
+          *f = *b;
+          f += 1;
+        }
 
         b += 1;
       }
-      else
-      {
-        *f = *b;
-        b += 1;
-        f += 1;
-      };
 
       break;
     }
@@ -577,7 +578,8 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       };
 
       // Break-Line;
-      *f = ' '; f += 1;
+      *f = ' ';
+      f += 1;
 
       break;
     };
@@ -670,7 +672,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         }
         else
         {
-          // DETECT TABLE LINE START
+          // Line Start;
           if (b - o == sj)
           {
             stw(sa, sa + 8, &f);
@@ -691,7 +693,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
             b += sj;
 
             // Check For Termination;
-            if (b > a || *b != '|')
+            if (b >= a || *b != '|')
             {
               char *i = "</table>\n\n";
               stw(i, i + 10, &f);
@@ -923,7 +925,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         {
           stw(u, u + 7, &f);
           sv = 0;
-        };
+        }
 
         b += 1;
       };
@@ -940,18 +942,20 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
         while (b < a && *b == i)
         {
+          *f = *b;
+          f += 1;
           b += 1;
-        };
+        }
       }
       break;
-    };
+    }
     default:
     {
       // Pass-through;
       *f = *b;
       f += 1;
       b += 1;
-    };
+    }
     };
   };
 
