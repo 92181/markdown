@@ -12,7 +12,7 @@ Look in the example directory to see a basic C usage example. To give a more bas
 
 ```c
 // Parse Markdown File (Output Size, Input Ptr, Input Size);
-char *r=psr(&u,b,s);
+char *r=parse_markdown(&u,b,s);
 ```
 
 The example executable can simply be compiled with `gcc main.c -o main -O3` then run it with `./main ../tests.generic.md` to generate an .html file.
@@ -21,7 +21,7 @@ The example executable can simply be compiled with `gcc main.c -o main -O3` then
 There is an embedded usage example in the wasm directory, you can compile the WebAssembly code with the following command.
 
 ```sh
-emcc -O3 ./../md.c -o md.mjs -s EXPORTED_FUNCTIONS='["_psr","_malloc","_free","stringToUTF8"]' -s EXPORTED_RUNTIME_METHODS='["HEAPU8","HEAPU32"]'
+emcc -O3 ./../md.c -o md.mjs -s EXPORTED_FUNCTIONS='["_parse_markdown","_malloc","_free","stringToUTF8"]' -s EXPORTED_RUNTIME_METHODS='["HEAPU8","HEAPU32"]'
 ```
 
 Afterwards launch a HTTP server in the same directory and visit it on the localhost.

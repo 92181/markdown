@@ -1,52 +1,67 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// Write String To Memory Location;
-static inline void stw(char *o, char *s, char **f)
+typedef struct md
 {
-  while (o < s)
-  {
-    **f = *o;
-    o += 1;
-    *f += 1;
-  };
-};
+  char *b;
+  char *b_pos;
+  char *b_end;
+} md_store;
 
 // Guarantee Memory;
-static inline int pmo(char **f, char **e, char **t, unsigned int s)
+static inline int pmo(md_store *d, long extra_len)
 {
-  if (*f + s > *e)
+  if (d->b_end - d->b_pos < extra_len)
   {
-    unsigned int q = *f - *t, c = (*e - *t) + 1024 * 1024;
+    long q = d->b_pos - d->b, c = (d->b_end - d->b) + extra_len + 1024;
 
-    char *u = realloc(*t, c);
+    char *u = realloc(d->b, c);
 
     if (u == 0)
     {
-      free(*t);
+      free(d->b);
+
       return 1;
     };
 
-    *t = u;
-    *f = *t + q;
-    *e = *t + c;
-  };
+    d->b = u;
+    d->b_pos = d->b + q;
+    d->b_end = d->b + c;
+  }
 
   return 0;
-};
+}
+
+// Write To Memory Location;
+static inline void stw(md_store *d, char *source, long len)
+{
+  if (pmo(d, len))
+  {
+    return;
+  }
+
+  __builtin_memcpy(d->b_pos, source, len);
+
+  d->b_pos += len;
+}
 
 // Convert Integer To String (Max: 10 Characters);
-static inline unsigned int its(unsigned int u, char *f)
+static inline unsigned int its(md_store *d, unsigned int u)
 {
-  unsigned int t = u, d = 0;
+  unsigned int t = u, n = 0;
 
   while (u > 0)
   {
     u /= 10;
-    d += 1;
+    n += 1;
   };
 
-  char *r = f + d - 1;
+  if (pmo(d, n))
+  {
+    return 0;
+  }
+
+  char *r = d->b_pos + n - 1;
 
   while (t > 0)
   {
@@ -55,11 +70,11 @@ static inline unsigned int its(unsigned int u, char *f)
     r -= 1;
   };
 
-  return d;
-};
+  return n;
+}
 
 // Handle Text Emphasis;
-static inline void sit(char **f, char **b, char *end, char c, unsigned int *d, unsigned int *x)
+static inline void sit(md_store *d, char **b, char *end, char c, unsigned int *s, unsigned int *x)
 {
   if (*b + 1 >= end)
   {
@@ -72,11 +87,11 @@ static inline void sit(char **f, char **b, char *end, char c, unsigned int *d, u
   if (**b == c)
   {
     // Handle Strong;
-    if (*d)
+    if (*s)
     {
-      *d = 0;
+      *s = 0;
       char *i = "</strong>";
-      stw(i, i + 9, f);
+      stw(d, i, 9);
       if (*b < end)
       {
         *b += 1;
@@ -84,14 +99,14 @@ static inline void sit(char **f, char **b, char *end, char c, unsigned int *d, u
     }
     else
     {
-      *d = 1;
+      *s = 1;
       char *i = "<strong>";
-      stw(i, i + 8, f);
+      stw(d, i, 8);
       if (*b < end)
       {
         *b += 1;
       }
-    };
+    }
   }
   else
   {
@@ -100,19 +115,19 @@ static inline void sit(char **f, char **b, char *end, char c, unsigned int *d, u
     {
       *x = 0;
       char *i = "</em>";
-      stw(i, i + 5, f);
+      stw(d, i, 5);
     }
     else
     {
       *x = 1;
       char *i = "<em>";
-      stw(i, i + 4, f);
-    };
-  };
-};
+      stw(d, i, 4);
+    }
+  }
+}
 
 // Handle Lists;
-static inline void lis(char i, char *sn, unsigned int *x, unsigned int **j, unsigned int *w, unsigned int *c, char **f, char *b)
+static inline void lis(char i, char *sn, unsigned int *x, unsigned int **j, unsigned int *w, unsigned int *c, md_store *d, char *b)
 {
   // Get Offset;
   unsigned *m = *j;
@@ -127,15 +142,15 @@ static inline void lis(char i, char *sn, unsigned int *x, unsigned int **j, unsi
     // Get Closing Type;
     if (**j == 0)
     {
-      stw(e, e + 5, f);
+      stw(d, e, 5);
     }
     else if (**j == 1)
     {
-      stw(k, k + 5, f);
+      stw(d, k, 5);
     }
     else
     {
-      stw(n, n + 13, f);
+      stw(d, n, 13);
     };
   };
 
@@ -155,17 +170,17 @@ static inline void lis(char i, char *sn, unsigned int *x, unsigned int **j, unsi
     if (i == 0)
     {
       char *e = "<ul>";
-      stw(e, e + 4, f);
+      stw(d, e, 4);
     }
     else if (i == 1)
     {
       char *e = "<ol>";
-      stw(e, e + 4, f);
+      stw(d, e, 4);
     };
   };
 
   char *k = "<li>";
-  stw(k, k + 4, f);
+  stw(d, k, 4);
 };
 
 // Remove Spaces In Front Of (Fake) New Line;
@@ -182,23 +197,32 @@ static inline void lds(char **b, char **o, char *end)
 };
 
 // Parse Markdown;
-extern inline char *psr(unsigned int *u, char *b, unsigned int s)
+extern inline char *parse_markdown(unsigned int *u, char *b, unsigned int s)
 {
   // Define State Variables;
-  char *q = b, *a = b + s, *m = 0, *o = b, *sn = b, hx[] = "<hx>", *ho = hx + 2, hd[] = "</hx>";
+  char *q = b, *a = b + s, *o = b, *sn = b, hx[] = "<hx>", *ho = hx + 2, hd[] = "</hx>";
 
-  unsigned int z = 0, x = 10000, g = 0;
+  unsigned int x = 10000;
 
   // Simulated New Line & Blockquote Variables;
   unsigned int v = 0, sw = 0, st = 0, sm = 0, sx = 0, sc = 0, sg = 0;
 
   // Allocate Buffer Memory (Input Size * Highest Set Size);
-  char *t = malloc(s * 26), *e = t + s * 26, *f = t, *y = b + s;
+  long cap = (long)s * 4;
+
+  if (cap < 1)
+  {
+    cap = 1;
+  }
+
+  char *t = malloc(cap), *y = b + s;
 
   if (t == 0)
   {
     return 0;
   }
+
+  md_store d = {.b = t, .b_pos = t, .b_end = t + cap};
 
   // List State Buffer;
   unsigned int *c = malloc(256 * sizeof(unsigned int)), *j = c, *w = c + 256;
@@ -222,6 +246,11 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
   // Loop Over Data;
   while (b < y)
   {
+    if (d.b_end - d.b_pos < 64)
+    {
+      pmo(&d, 64);
+    }
+
     switch (*b)
     {
     case '#':
@@ -239,37 +268,27 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
         // Write Header And Save It;
         *ho = '0' + (b - n);
-        stw(hx, hx + 4, &f);
+        stw(&d, hx, 4);
       }
       else
       {
         // Pass-through;
-        *f = *b;
+        *d.b_pos = *b;
         b += 1;
-        f += 1;
+        d.b_pos += 1;
       };
 
       break;
     };
     case '_':
     {
-      if (pmo(&f, &e, &t, 12))
-      {
-        return 0;
-      };
-
       // Handle Text Emphasis;
-      sit(&f, &b, a, '_', &sx, &sc);
+      sit(&d, &b, a, '_', &sx, &sc);
 
       break;
     }
     case '~':
     {
-      if (pmo(&f, &e, &t, 6))
-      {
-        return 0;
-      };
-
       if (b + 1 < a && *(b + 1) == '~')
       {
         // Handle Text Strike-Through;
@@ -277,13 +296,13 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         {
           st = 0;
           char *i = "</del>";
-          stw(i, i + 6, &f);
+          stw(&d, i, 6);
         }
         else if (b + 2 < a && *(b + 2) > ' ')
         {
           st = 1;
           char *i = "<del>";
-          stw(i, i + 5, &f);
+          stw(&d, i, 5);
         };
 
         b += 2;
@@ -295,18 +314,18 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         {
           sm = 0;
           char *i = "</sub>";
-          stw(i, i + 6, &f);
+          stw(&d, i, 6);
         }
         else if (b + 1 < a && *(b + 1) > ' ')
         {
           sm = 1;
           char *i = "<sub>";
-          stw(i, i + 5, &f);
+          stw(&d, i, 5);
         }
         else
         {
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
         }
 
         b += 1;
@@ -316,23 +335,18 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
     }
     case '^':
     {
-      if (pmo(&f, &e, &t, 6))
-      {
-        return 0;
-      };
-
       // Handle SuperScript;
       if (sm)
       {
         sm = 0;
         char *i = "</sup>";
-        stw(i, i + 6, &f);
+        stw(&d, i, 6);
       }
       else
       {
         sm = 1;
         char *i = "<sup>";
-        stw(i, i + 5, &f);
+        stw(&d, i, 5);
       };
 
       b += 1;
@@ -341,11 +355,6 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
     case '.':
     case ')':
     {
-      if (pmo(&f, &e, &t, 14))
-      {
-        return 0;
-      };
-
       // Get Numbers In Front;
       char *n = b - 1;
 
@@ -359,10 +368,9 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       // Check For Number And New Line;
       if (n - o == 0 && b != n)
       {
-        f -= b - n;
+        d.b_pos -= b - n;
 
-        // printf("ORDER CALL!\n");
-        lis(1, sn, &x, &j, w, c, &f, b);
+        lis(1, sn, &x, &j, w, c, &d, b);
 
         // Handle New Line;
         b += 2;
@@ -371,29 +379,24 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       else
       {
         // Pass-through;
-        *f = *b;
+        *d.b_pos = *b;
         b += 1;
-        f += 1;
+        d.b_pos += 1;
       };
 
       break;
     };
     case '*':
     {
-      if (pmo(&f, &e, &t, 1024))
-      {
-        return 0;
-      };
-
       if (b + 1 < a && *(b + 1) == '*')
       {
         // Handle Text Emphasis;
-        sit(&f, &b, a, '*', &sx, &sc);
+        sit(&d, &b, a, '*', &sx, &sc);
       }
       else if (b + 1 < a && *(b + 1) == ' ' && b - o == 0)
       {
         // Handle Unordered Lists;
-        lis(0, sn, &x, &j, w, c, &f, b);
+        lis(0, sn, &x, &j, w, c, &d, b);
 
         // Handle New Line;
         b += 2;
@@ -402,18 +405,13 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       else
       {
         // Handle Text Emphasis;
-        sit(&f, &b, a, '*', &sx, &sc);
+        sit(&d, &b, a, '*', &sx, &sc);
       };
 
       break;
     };
     case '>':
     {
-      if (pmo(&f, &e, &t, 1024))
-      {
-        return 0;
-      };
-
       // Check For New Line;
       if (b - o == 0)
       {
@@ -441,21 +439,21 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           // terminate ul, ol & block here too!
           while (j > c && x <= *(j - 1))
           {
-            char *e = "</ul>", *k = "</ol>", *n = "</blockquote>";
+            char *e = "</ul>", *k = "</ol>";
             j -= 2;
 
             // Get Closing Type;
             if (*j == 0)
             {
-              stw(e, e + 5, &f);
+              stw(&d, e, 5);
             }
             else if (*j == 1)
             {
-              stw(k, k + 5, &f);
+              stw(&d, k, 5);
             }
             else
             {
-              stw(h, h + 13, &f);
+              stw(&d, h, 13);
 
               v -= 1;
               break;
@@ -470,7 +468,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           *(j + 1) = x;
           j += 2;
 
-          stw(i, i + 12, &f);
+          stw(&d, i, 12);
           v += 1;
         };
 
@@ -480,9 +478,9 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       else
       {
         // Pass-through;
-        *f = *b;
+        *d.b_pos = *b;
         b += 1;
-        f += 1;
+        d.b_pos += 1;
       };
 
       break;
@@ -499,17 +497,12 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       sn = b;
       lds(&b, &o, a);
 
-      if (pmo(&f, &e, &t, 1024))
-      {
-        return 0;
-      };
-
       // Close Header Tag;
       if (*ho != 'x')
       {
         // Get Type And Write;
         *(hd + 3) = *ho;
-        stw(hd, hd + 5, &f);
+        stw(&d, hd, 5);
         *ho = 'x';
       };
 
@@ -528,7 +521,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           n = sn + sw;
 
           // If First Blockquote Is Not There;
-          if (n > a || *n != '>')
+          if (n >= a || *n != '>')
           {
             o = sw;
           };
@@ -536,7 +529,15 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
         // Handle List;
         n = b;
-        t = n + x + 1;
+
+        if ((long)x + 1 > a - n)
+        {
+          t = a;
+        }
+        else
+        {
+          t = n + x + 1;
+        };
 
         // Last Offset Reach Check;
         while (n < t && *n >= ' ')
@@ -562,15 +563,15 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
             // Get Closing Type;
             if (*j == 0)
             {
-              stw(e, e + 5, &f);
+              stw(&d, e, 5);
             }
             else if (*j == 1)
             {
-              stw(k, k + 5, &f);
+              stw(&d, k, 5);
             }
             else
             {
-              stw(h, h + 13, &f);
+              stw(&d, h, 13);
               v -= 1;
             };
           };
@@ -578,22 +579,16 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       };
 
       // Break-Line;
-      *f = ' ';
-      f += 1;
+      *d.b_pos = ' ';
+      d.b_pos += 1;
 
       break;
     };
     case '|':
     {
-      if (pmo(&f, &e, &t, 1024))
-      {
-        return 0;
-      };
-
       // Check For Active Table;
       if (sl > 0)
       {
-        // Handle Table Alignement;
         if (sl == 2)
         {
           unsigned int u = 0, aq = 0;
@@ -603,7 +598,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
           // Write Style Type;
           char *i = "<style>";
-          stw(i, i + 7, &f);
+          stw(&d, i, 7);
 
           // Detect Alignement;
           while (b < a && *b >= ' ')
@@ -631,30 +626,25 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
               // Write To Table Style;
               if (u > 1)
               {
-                if (pmo(&f, &e, &t, 512))
-                {
-                  return 0;
-                };
-
                 // Handle Process;
                 char *h = "#t", *z = ">td:nth-child(", *k = "){text-align:", *e = "center;}", *l = "right;}";
 
-                stw(h, h + 2, &f);
-                f += its(sg, f);
+                stw(&d, h, 2);
+                d.b_pos += its(&d, sg);
 
                 // Write Integer And Remaining Text;
-                stw(z, z + 14, &f);
-                f += its(aq, f);
-                stw(k, k + 13, &f);
+                stw(&d, z, 14);
+                d.b_pos += its(&d, aq);
+                stw(&d, k, 13);
 
                 // Write Alignement (Center, Right);
                 if (u == 3)
                 {
-                  stw(e, e + 8, &f);
+                  stw(&d, e, 8);
                 }
                 else
                 {
-                  stw(l, l + 7, &f);
+                  stw(&d, l, 7);
                 };
               };
 
@@ -666,7 +656,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           };
 
           char *ii = "</style>";
-          stw(ii, ii + 8, &f);
+          stw(&d, ii, 8);
 
           sl += 1;
         }
@@ -675,13 +665,13 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           // Line Start;
           if (b - o == sj)
           {
-            stw(sa, sa + 8, &f);
+            stw(&d, sa, 8);
             b += 1;
           }
           else if (b + 1 < a && *(b + 1) < ' ')
           {
             // Handle Table Line End;
-            stw(sq, sq + 10, &f);
+            stw(&d, sq, 10);
             b += 1;
 
             // Handle CRLF;
@@ -696,7 +686,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
             if (b >= a || *b != '|')
             {
               char *i = "</table>\n\n";
-              stw(i, i + 10, &f);
+              stw(&d, i, 10);
             };
 
             // Count Table Lines;
@@ -706,7 +696,7 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           else
           {
             // In-between Table Line;
-            stw(sz, sz + 9, &f);
+            stw(&d, sz, 9);
             b += 1;
           };
         };
@@ -721,18 +711,18 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           sg += 1;
 
           // Write ID;
-          stw(i, i + 12, &f);
-          f += its(sg, f);
-          stw(k, k + 2, &f);
-          stw(sa, sa + 8, &f);
+          stw(&d, i, 12);
+          d.b_pos += its(&d, sg);
+          stw(&d, k, 2);
+          stw(&d, sa, 8);
 
           // Save Start Offset;
           sj = b - o;
         }
         else
         {
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
         };
 
         b += 1;
@@ -742,66 +732,61 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
     };
     case '[':
     {
-      if (pmo(&f, &e, &t, 1024))
-      {
-        return 0;
-      };
-
       // Handle Image, Checkbox Or Link;
       if (b - 1 > q && *(b - 1) == '!')
       {
-        f -= 1;
+        d.b_pos -= 1;
         b += 1;
 
         char *i = "<img alt='", *y = "' src='", *g = "'>";
-        stw(i, i + 10, &f);
+        stw(&d, i, 10);
 
         // Pass-Through Alt Text;
         while (b < a && *b != ']')
         {
-          if (pmo(&f, &e, &t, 10))
+          if (pmo(&d, 12))
           {
             return 0;
           };
 
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
           b += 1;
         };
 
-        stw(y, y + 7, &f);
+        stw(&d, y, 7);
         b += 2;
 
         // Write Image Source;
         while (b < a && *b != ')')
         {
-          if (pmo(&f, &e, &t, 5))
+          if (pmo(&d, 8))
           {
             return 0;
           };
 
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
           b += 1;
         };
 
-        stw(g, g + 2, &f);
+        stw(&d, g, 2);
       }
       else if (b + 3 < a && *(b + 2) == ']' && *(b + 3) != '(')
       {
         // Write Checkbox;
         char *i = "<input disabled type='checkbox'", *y = " checked>";
-        stw(i, i + 31, &f);
+        stw(&d, i, 31);
 
         // Check If Active;
         if (*(b + 1) == 'x')
         {
-          stw(y, y + 9, &f);
+          stw(&d, y, 9);
         }
         else
         {
-          *f = '>';
-          f += 1;
+          *d.b_pos = '>';
+          d.b_pos += 1;
         };
 
         b += 2;
@@ -815,22 +800,23 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
           if (*n == ']' && *(n + 1) == '(')
           {
             // Start Link;
-            char *i = "<a src=\"", *h = "\">";
-            stw(i, i + 8, &f);
+            char i[] = "<a href=\"", *h = "\">";
+            stw(&d, i, sizeof(i) - 1);
             n += 2;
 
             // Write Link Source;
+            char *r = n;
+
             while (n < a && *n != ')')
             {
-              *f = *n;
-              f += 1;
-
               n += 1;
             };
 
+            stw(&d, r, n - r);
+
             // Save Link Size And Write;
             su = n;
-            stw(h, h + 2, &f);
+            stw(&d, h, 2);
           };
 
           n += 1;
@@ -848,14 +834,14 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         char *i = "</a>";
         b = su;
         su = 0;
-        stw(i, i + 4, &f);
+        stw(&d, i, 4);
       }
       else
       {
         // Pass-Through;
-        *f = ']';
+        *d.b_pos = ']';
         b += 1;
-        f += 1;
+        d.b_pos += 1;
       };
 
       b += 1;
@@ -871,24 +857,24 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       {
         char *i = "<code language=\"";
         b += 3;
-        stw(i, i + 16, &f);
+        stw(&d, i, 16);
 
         // Pass-Through Type;
         while (b < a && *b >= ' ')
         {
-          if (pmo(&f, &e, &t, 10))
+          if (pmo(&d, 12))
           {
             return 0;
           };
 
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
           b += 1;
         };
 
-        *f = '"';
-        *(f + 1) = '>';
-        f += 2;
+        *d.b_pos = '"';
+        *(d.b_pos + 1) = '>';
+        d.b_pos += 2;
 
         // Pass-Through Code;
         while (b < a && *b <= ' ')
@@ -898,18 +884,18 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
         while (b < a && *b != '`')
         {
-          if (pmo(&f, &e, &t, 10))
+          if (pmo(&d, 12))
           {
             return 0;
           };
 
-          *f = *b;
-          f += 1;
+          *d.b_pos = *b;
+          d.b_pos += 1;
           b += 1;
         };
 
         // Write End Tag;
-        stw(u, u + 7, &f);
+        stw(&d, u, 7);
         b += 3;
       }
       else
@@ -918,12 +904,12 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
         if (sv == 0)
         {
           char *i = "<code>";
-          stw(i, i + 6, &f);
+          stw(&d, i, 6);
           sv = 1;
         }
         else
         {
-          stw(u, u + 7, &f);
+          stw(&d, u, 7);
           sv = 0;
         }
 
@@ -938,22 +924,22 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
       b += 1;
       if (b < a)
       {
-        char i = *b;
+        char i = *b, *r = b;
 
         while (b < a && *b == i)
         {
-          *f = *b;
-          f += 1;
           b += 1;
         }
+
+        stw(&d, r, b - r);
       }
       break;
     }
     default:
     {
       // Pass-through;
-      *f = *b;
-      f += 1;
+      *d.b_pos = *b;
+      d.b_pos += 1;
       b += 1;
     }
     };
@@ -961,12 +947,16 @@ extern inline char *psr(unsigned int *u, char *b, unsigned int s)
 
   // Free Memory And Get Size;
   free(c);
-  *u = (f - t);
+  *u = (d.b_pos - d.b);
 
   // Null-Terminate;
-  *f = 0;
-  f += 1;
+  if (pmo(&d, 1))
+  {
+    return 0;
+  }
 
-  // Return;
-  return t;
-};
+  *d.b_pos = 0;
+  d.b_pos += 1;
+
+  return d.b;
+}
